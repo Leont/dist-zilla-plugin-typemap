@@ -86,7 +86,7 @@ sub register_prereqs {
 	$self->zilla->register_prereqs({ phase => 'build' }, 'ExtUtils::ParseXS' => $version) if $version;
 
 	for my $module ($self->modules) {
-		$self->zilla->register_prereqs({ phase => 'develop' }, $module);
+		$self->zilla->register_prereqs({ phase => 'develop' }, $module => 0);
 	}
 
 	return;

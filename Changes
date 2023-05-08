@@ -1,6 +1,7 @@
 Revision history for Dist-Zilla-Plugin-Typemap
 
 {{$NEXT}}
+          - Add version to typemap module dependencies
 
 0.001     2023-05-08 20:35:34+02:00 Europe/Amsterdam
           Initial release to an unsuspecting world
