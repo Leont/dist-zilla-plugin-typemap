@@ -6,7 +6,7 @@ with 'Dist::Zilla::Role::FileGatherer', 'Dist::Zilla::Role::PrereqSource';
 
 use Dist::Zilla::File::InMemory;
 use List::Util 'first';
-use MooseX::Types::Moose qw/ArrayRef Bool/;
+use MooseX::Types::Moose qw/ArrayRef Bool Str/;
 use MooseX::Types::Perl qw/StrictVersionStr/;
 use ExtUtils::Typemaps;
 use Module::Runtime 'require_module';
@@ -46,6 +46,12 @@ has minimum_pxs => (
 	default => '0',
 );
 
+has filename => (
+	is      => 'ro',
+	isa     => Str,
+	default => 'typemap',
+);
+
 sub gather_files {
 	my ($self) = @_;
 
@@ -53,7 +59,7 @@ sub gather_files {
 
 	if (my $file = first { $_->name eq 'typemap' } @{$self->zilla->files}) {
 		$typemap->add_string(string => $file->content);
-		$self->zilla->prune_file($file);
+		$self->zilla->prune_file($file) if $self->filename eq 'typemap';
 	}
 
 	for my $name ($self->modules) {
@@ -67,7 +73,7 @@ sub gather_files {
 	}
 
 	my $file = Dist::Zilla::File::InMemory->new({
-		name    => 'typemap',
+		name    => $self->filename,
 		content => $typemap->as_string,
 	});
 	$self->add_file($file);
@@ -115,6 +121,10 @@ This adds typemap module to the type, e.g. C<ExtUtils::Typemaps::Magic> or C<Ext
 =attr file
 
 This adds a file in the dist to the typemap.
+
+=attr filename
+
+This is the name of the file that the typemap is written to. It defaults to F<typemap>.
 
 =attr minimum_pxs
 
