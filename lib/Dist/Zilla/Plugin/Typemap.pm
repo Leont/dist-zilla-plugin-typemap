@@ -10,6 +10,7 @@ use MooseX::Types::Moose qw/ArrayRef Bool Str/;
 use MooseX::Types::Perl qw/StrictVersionStr/;
 use ExtUtils::Typemaps;
 use Module::Runtime 'require_module';
+use Carp 'croak';
 
 sub mvp_multivalue_args {
 	return qw/modules files/;
@@ -68,7 +69,7 @@ sub gather_files {
 	}
 
 	for my $filename ($self->files) {
-		my $file = first { $_->name eq $filename } @{$self->zilla->files};
+		my $file = first { $_->name eq $filename } @{$self->zilla->files} or croak "No such typemap file $filename";
 		$typemap->add_string(string => $file->content);
 	}
 
