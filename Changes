@@ -1,6 +1,7 @@
 Revision history for Dist-Zilla-Plugin-Typemap
 
 {{$NEXT}}
+          - Make plugin a FileMunger
           - Add filename attribute
           - Add version to typemap module dependencies
 

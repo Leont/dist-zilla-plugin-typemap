@@ -2,7 +2,7 @@ package Dist::Zilla::Plugin::Typemap;
 
 use Moose;
 
-with 'Dist::Zilla::Role::FileGatherer', 'Dist::Zilla::Role::PrereqSource';
+with 'Dist::Zilla::Role::FileMunger', 'Dist::Zilla::Role::PrereqSource';
 
 use Dist::Zilla::File::InMemory;
 use List::Util 'first';
@@ -53,15 +53,19 @@ has filename => (
 	default => 'typemap',
 );
 
-sub gather_files {
+sub munge_files {
 	my ($self) = @_;
 
-	my $typemap = ExtUtils::Typemaps->new;
-
-	if (my $file = first { $_->name eq 'typemap' } @{$self->zilla->files}) {
-		$typemap->add_string(string => $file->content);
-		$self->zilla->prune_file($file) if $self->filename eq 'typemap';
+	for my $file (@{$self->zilla->files}) {
+		next unless $file->name eq $self->filename;
+		$self->munge_file($file);
 	}
+}
+
+sub munge_file {
+	my ($self, $file) = @_;
+
+	my $typemap = ExtUtils::Typemaps->new(string => $file->content);
 
 	for my $name ($self->modules) {
 		require_module($name);
@@ -73,11 +77,7 @@ sub gather_files {
 		$typemap->add_string(string => $file->content);
 	}
 
-	my $file = Dist::Zilla::File::InMemory->new({
-		name    => $self->filename,
-		content => $typemap->as_string,
-	});
-	$self->add_file($file);
+	$file->content($typemap->as_string);
 
 	return;
 }
@@ -113,7 +113,7 @@ no Moose;
 
 =head1 DESCRIPTION
 
-This module manipulates the typemap of an XS distribution. It uses the existing typemap (if any) as a base, and adds maps from both typemap modules and from separate files to it.
+This module manipulates the typemap of an XS distribution. It uses the existing typemap as a base, and adds maps from both typemap modules and from separate files to it.
 
 =attr module
 
