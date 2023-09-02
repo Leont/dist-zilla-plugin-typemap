@@ -1,6 +1,7 @@
 Revision history for Dist-Zilla-Plugin-Typemap
 
 {{$NEXT}}
+          - Automatically determine mimimum ParseXS version
 
 0.002     2023-05-09 12:38:13+02:00 Europe/Amsterdam
           - Make plugin a FileMunger
