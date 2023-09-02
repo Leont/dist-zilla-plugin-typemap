@@ -90,7 +90,7 @@ sub register_prereqs {
 		my @versions = 0;
 		for my $module ($self->modules) {
 			require_module($module);
-			push @versions, $module->minimum_pxs;
+			push @versions, $module->minimum_pxs if $module->can('minimum_pxs');
 		}
 		$version = max(@versions);
 	}
