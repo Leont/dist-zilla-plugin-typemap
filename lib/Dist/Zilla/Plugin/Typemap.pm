@@ -68,8 +68,9 @@ sub munge_file {
 	my $typemap = ExtUtils::Typemaps->new(string => $file->content);
 
 	for my $name ($self->modules) {
-		require_module($name);
-		$typemap->merge(typemap => $name->new);
+		my $module = $name =~ s/^\+/ExtUtils::Typemaps::/gr;
+		require_module($module);
+		$typemap->merge(typemap => $module->new);
 	}
 
 	for my $filename ($self->files) {
@@ -86,9 +87,10 @@ sub register_prereqs {
 	my ($self) = @_;
 
 	my $version = $self->minimum_pxs;
+	my @modules = map { s/^\+/ExtUtils::Typemaps::/gr } $self->modules;
 	if ($version eq 'auto') {
 		my @versions = 0;
-		for my $module ($self->modules) {
+		for my $module (@modules) {
 			require_module($module);
 			push @versions, $module->minimum_pxs if $module->can('minimum_pxs');
 		}
@@ -100,7 +102,7 @@ sub register_prereqs {
 	}
 	$self->zilla->register_prereqs({ phase => 'build' }, 'ExtUtils::ParseXS' => $version) if $version;
 
-	for my $module ($self->modules) {
+	for my $module (@modules) {
 		$self->zilla->register_prereqs({ phase => 'develop' }, $module => 0);
 	}
 
@@ -125,11 +127,11 @@ This module manipulates the typemap of an XS distribution. It uses the existing 
 
 =attr module
 
-This adds typemap module to the type, e.g. C<ExtUtils::Typemaps::Magic> or C<ExtUtils::Typemaps::STL>.
+This adds typemap module to the type, e.g. C<ExtUtils::Typemaps::Magic> or C<ExtUtils::Typemaps::STL>. The prefix C<+> is replaced with C<ExtUtils::Typemaps::> for convenience. This may be given multiple times.
 
 =attr file
 
-This adds a file in the dist to the typemap.
+This adds a file in the dist to the typemap. This may be given multiple times.
 
 =attr filename
 
