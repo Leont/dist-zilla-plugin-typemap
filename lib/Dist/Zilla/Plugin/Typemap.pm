@@ -4,6 +4,8 @@ use Moose;
 
 with 'Dist::Zilla::Role::FileMunger', 'Dist::Zilla::Role::PrereqSource';
 
+use experimental 'signatures', 'postderef';
+
 use Dist::Zilla::File::InMemory;
 use List::Util qw/first max/;
 use MooseX::Types::Moose qw/ArrayRef Bool Str/;
@@ -53,18 +55,14 @@ has filename => (
 	default => 'typemap',
 );
 
-sub munge_files {
-	my ($self) = @_;
-
-	for my $file (@{$self->zilla->files}) {
+sub munge_files($self) {
+	for my $file ($self->zilla->files->@*) {
 		next unless $file->name eq $self->filename;
 		$self->munge_file($file);
 	}
 }
 
-sub munge_file {
-	my ($self, $file) = @_;
-
+sub munge_file($self, $file) {
 	my $typemap = ExtUtils::Typemaps->new(string => $file->content);
 
 	for my $name ($self->modules) {
@@ -74,7 +72,7 @@ sub munge_file {
 	}
 
 	for my $filename ($self->files) {
-		my $file = first { $_->name eq $filename } @{$self->zilla->files} or croak "No such typemap file $filename";
+		my $file = first { $_->name eq $filename } $self->zilla->files->@* or croak "No such typemap file $filename";
 		$typemap->add_string(string => $file->content);
 	}
 
@@ -83,9 +81,7 @@ sub munge_file {
 	return;
 }
 
-sub register_prereqs {
-	my ($self) = @_;
-
+sub register_prereqs($self) {
 	my $version = $self->minimum_pxs;
 	my @modules = map { s/^\+/ExtUtils::Typemaps::/gr } $self->modules;
 	if ($version eq 'auto') {
