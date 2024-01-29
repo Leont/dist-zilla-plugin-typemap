@@ -2,7 +2,7 @@ package Dist::Zilla::Plugin::Typemap;
 
 use Moose;
 
-with 'Dist::Zilla::Role::FileMunger', 'Dist::Zilla::Role::PrereqSource';
+with 'Dist::Zilla::Role::FileGatherer', 'Dist::Zilla::Role::PrereqSource';
 
 use experimental 'signatures', 'postderef';
 
@@ -55,11 +55,18 @@ has filename => (
 	default => 'typemap',
 );
 
-sub munge_files($self) {
-	for my $file ($self->zilla->files->@*) {
-		next unless $file->name eq $self->filename;
-		$self->munge_file($file);
+sub gather_files($self) {
+	my ($file) = grep { $_->name eq $self->filename } $self->zilla->files->@*;
+	if (!$file) {
+		$file = Dist::Zilla::File::InMemory->new(
+            name => $self->filename,
+            content => '',
+		);
+		$self->add_file($file);
 	}
+	$self->munge_file($file);
+
+	return
 }
 
 sub munge_file($self, $file) {
